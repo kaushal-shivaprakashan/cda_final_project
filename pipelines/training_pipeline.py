@@ -1,4 +1,3 @@
-# training_pipeline.py
 """
 Standalone model training pipeline.
 Loads raw data, aggregates rides into hourly counts,
@@ -16,8 +15,12 @@ from lightgbm import LGBMRegressor
 from joblib import dump
 
 # ── 1) CONFIGURATION ─────────────────────────────────────────────────
-PARQUET_PATH = "/Users/kaushalshivaprakash/Desktop/project3/data/processed/cleaned_citibike/citibike_2023_top3.parquet"
-MODEL_DIR    = "/Users/kaushalshivaprakash/Desktop/project3/pipelines/models"
+# Use ENV vars or default to paths inside the repo
+PARQUET_PATH = os.getenv(
+    "PARQUET_PATH",
+    "data/processed/cleaned_citibike/citibike_2023_top3.parquet"
+)
+MODEL_DIR = os.getenv("MODEL_DIR", "pipelines/models")
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 # ── 2) DATA LOADING & AGGREGATION ─────────────────────────────────────
@@ -28,7 +31,7 @@ df["started_at"] = pd.to_datetime(df["started_at"])
 df["hour_bucket"] = df["started_at"].dt.floor("H")
 # Aggregate trips per station per hour
 agg = (
-    df.groupby(["start_station_id", "hour_bucket"])  
+    df.groupby(["start_station_id", "hour_bucket"])
       .agg(target_trips=("ride_id", "count"))
       .reset_index()
 )
@@ -81,7 +84,6 @@ pipeline = Pipeline([
 X_train, X_val, y_train, y_val = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
-
 pipeline.fit(X_train, y_train)
 
 # ── 7) Evaluation ─────────────────────────────────────────────────────
@@ -91,7 +93,6 @@ print(f"Validation MAE: {mae:.3f}")
 
 # ── 8) Save artifacts ─────────────────────────────────────────────────
 feature_pipeline_path = os.path.join(MODEL_DIR, "feature_pipeline.pkl")
-# Save model under the name 'model_training_pipeline.pkl'
 model_path            = os.path.join(MODEL_DIR, "model_training_pipeline.pkl")
 
 dump(preprocessor, feature_pipeline_path)
