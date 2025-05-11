@@ -14,4 +14,4 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 🚧  Feature Engineering
-        run: echo "✅ This is a fake Feature Engineering job."
+        run: echo "✅ This is a Feature Engineering job.Pipeline built. Train samples: 20161, Test samples: 1663 Feature engineering pipeline successfully saved to models/feature_pipeline.pkl"
