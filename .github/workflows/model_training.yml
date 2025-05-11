@@ -1,26 +1,28 @@
-# .github/workflows/model_training.yml
 name: Model Training Pipeline
 
 on:
   push:
     branches: [ main ]
     paths:
-      - 'model_training_pipeline.ipynb'
-      - 'model_training_pipeline.py'
+      - 'training_pipeline.py'
+      - 'data/processed/cleaned_citibike/**'
       - 'requirements.txt'
   schedule:
-    # every day at 5 AM UTC (after inference)
+    # every day at 5 AM UTC
     - cron: '0 5 * * *'
   workflow_dispatch:
 
 jobs:
   train_models:
     runs-on: ubuntu-latest
+    env:
+      PARQUET_PATH: data/processed/cleaned_citibike/citibike_2023_top3.parquet
+      MODEL_DIR: pipelines/models
     steps:
-      - name: 🛎 Checkout code
+      - name: 🛎 Checkout repository
         uses: actions/checkout@v3
 
-      - name: 🔧 Setup Python 3.11
+      - name: 🔧 Set up Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
@@ -30,10 +32,12 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 🏋️ Train and log models
+      - name: 🏋️ Run training pipeline
         run: |
           python training_pipeline.py
-        # or with papermill:
-        # run: |
-        #   pip install papermill
-        #   papermill model_training_pipeline.ipynb output/train_output.ipynb
+
+      - name: 📂 Upload Saved Model Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: trained-model
+          path: pipelines/models/
