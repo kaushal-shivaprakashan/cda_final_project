@@ -33,11 +33,12 @@ jobs:
           pip install -r requirements.txt
 
       - name: 🏋️ Run training pipeline
-        run: |
-          python training_pipeline.py
+        run: python training_pipeline.py
 
-      - name: 📂 Upload Saved Model Artifacts
+      - name: 📂 Upload saved model artifacts
         uses: actions/upload-artifact@v3
         with:
           name: trained-model
-          path: pipelines/models/
+          # Glob all pickled artifacts in your models folder
+          paths: |
+            pipelines/models/*.pkl
